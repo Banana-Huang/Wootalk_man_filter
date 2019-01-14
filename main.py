@@ -39,7 +39,11 @@ def stop():
     b1.config( state=tk.NORMAL )
     b2.config( state=tk.DISABLED )
     e.config( state=tk.NORMAL )
-    fisher.pause( filter.s4 )
+    try:
+        fisher.spider.leave()
+    except:
+        pass
+    fisher.pause(filter.s4)
     fisher.message_queue.clear()
 
 photo = tk.PhotoImage(file="background.png")
@@ -70,3 +74,4 @@ if __name__ == '__main__':
     fisher.setDaemon(True)
     window.iconbitmap(r'love.ico')
     window.mainloop()
+    fisher.spider.close_driver()

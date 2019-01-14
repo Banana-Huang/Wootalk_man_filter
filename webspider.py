@@ -57,10 +57,10 @@ class woospider:
             chrome_options.add_argument('--proxy-server=http://' + self.__proxy_ip.pop())"""
         #self.__driver = webdriver.Chrome(chrome_options=chrome_options)
         self.__driver = webdriver.Chrome()
-        try:
+        """try:
             self.__driver.minimize_window()
         except:
-            pass
+            pass"""
     
     def close_driver(self): # close driver
         self.__driver.close()
@@ -82,10 +82,10 @@ class woospider:
             self.__driver.get(self.__website)
 
     def start(self):
-        try:
+        """try:
             self.__driver.minimize_window()
         except:
-            pass
+            pass"""
         self.stranger_leave = False
         self.message_count = -1
         cid = "startButton"
@@ -105,7 +105,7 @@ class woospider:
             self.__driver.find_element_by_id("popup-yes").click()
         except:
             pass
-        time.sleep(3)
+        time.sleep(1)
         self.start_flag = False
         self.enter_room = False
 
@@ -113,14 +113,13 @@ class woospider:
         if self.start_flag:
             try:
                 locator = (By.ID, "sendButton")
-                WebDriverWait(self.__driver, 0, 0.5).until(EC.element_to_be_clickable(locator))
+                WebDriverWait(self.__driver, 0, 0.01).until(EC.element_to_be_clickable(locator))
                 element = self.__driver.find_element_by_id("sendButton")
                 button_type = element.find_element_by_tag_name('input').get_attribute('value')
                 if button_type == "傳送":
                     textbox = self.__driver.find_element_by_xpath("//input[@placeholder='輸入訊息']")
                     textbox.send_keys(message)
                     element.click()
-                
             except:
                 pass
         else:
@@ -128,22 +127,34 @@ class woospider:
     
     def get_message(self,wait_scecond=0):
         message = None
-        if self.start_flag:
+        if wait_scecond == 0:
+            try:
+                xpath = "//div[@mid='{}']".format(self.message_count+1)
+                message = self.__driver.find_element_by_xpath(xpath).text
+                m = re.match(r'陌生人：(.*)\n\(.*\)',message,re.S)
+                if m:
+                    m = m.group(1)
+                else:
+                    m = None
+            except:
+                m = None
+        else:
             try:
                 xpath = "//div[@mid='{}']".format(self.message_count+1)
                 locator = (By.XPATH, xpath)
-                WebDriverWait(self.__driver, wait_scecond, 0.5).until(EC.presence_of_element_located(locator))
+                WebDriverWait(self.__driver, wait_scecond, 0.001).until(EC.presence_of_element_located(locator))
                 message = self.__driver.find_element_by_xpath(xpath).text
-                message = re.match(r'陌生人：(.*)\n\(.*\)',message,re.S)
-                if message:
-                    message = message.group(1)
+                m = re.match(r'陌生人：(.*)\n\(.*\)',message,re.S)
+                if m:
+                    m = m.group(1)
                 else:
-                    message = None
+                    m = None
             except TimeoutException:
-                message = None
+                m = None
+
         if message != None:
             self.message_count +=1
-        return message
+        return m
     
     def change_secret(self,secret_key = None):
         if secret_key:
@@ -176,7 +187,7 @@ class woospider:
         link = None
         try:
             locator = (By.LINK_TEXT, '開啟此連結')
-            WebDriverWait(self.__driver, 5, 0.5).until(EC.presence_of_element_located(locator))
+            WebDriverWait(self.__driver, 1, 0.01).until(EC.presence_of_element_located(locator))
             link = self.__driver.find_element_by_link_text('開啟此連結').get_attribute('href')
         except TimeoutException:
             pass
@@ -194,13 +205,8 @@ class woospider:
             except:
                 pass
                 
-        try:
-            text = text[2]
-            self.enter_room = True
-            return None
-        except:
-            self.enter_room = False
-            return 'long'
+        self.enter_room = False
+        return 'long'
     
     def maximize(self):
         self.__driver.maximize_window()

@@ -5,11 +5,13 @@ import random
 import tkinter as tk
 import re
 from tkinter import messagebox
-
+pattern = [re.compile(r'.*男.*'), re.compile(r'.*找.*妹.*'), re.compile(r'.*找.*女.*'),
+    re.compile(r'.*妳好.*'),re.compile(r'.*女.*\?|？'),re.compile(r'.*女.*嗎\?|？'),re.compile(r'.*女.*嗎')]
+w_pattern = [re.compile(r'.*女.*'), re.compile(r'.*women.*')]
+answer = ['哈囉','你好','晚上好','一個人的夜晚好痛苦','想找一個人聊天','男? 女?','安','嗨嗨','你好 我是電通彭于晏']
 def s2( object ,robot ):
+    global pattern
     object.state_label['text'] = '檢查陌生人回復'
-    pattern = [re.compile(r'.*男.*'), re.compile(r'.*找.*妹.*'), re.compile(r'.*找.*女.*'),
-    re.compile(r'.*妳好.*'),re.compile(r'.*女.*\?'),re.compile(r'.*女.*嗎\?')]
     leave_flag = False
     message = None
     for message in object.message_queue:
@@ -24,12 +26,18 @@ def s2( object ,robot ):
     
 
 def s3( object, robot ):
+    global answer
     object.state_label['text'] = '問候對方'
-    answer = ['哈囉','你好','晚上好','一個人的夜晚好痛苦','電通肥宅衝衝衝','想找一個人聊天','男? 女?','安','嗨嗨']
     message = random.choice(answer)
     if not robot.check_stranger():
         robot.send_message(message)
-    message = robot.get_message(5)
+    else:
+        return False
+    message = robot.get_message() # progress
+    while message != None:
+        object.message_queue.append(message)
+        message = robot.get_message()
+    message = robot.get_message()
     while message != None:
         object.message_queue.append(message)
         message = robot.get_message()
@@ -40,7 +48,10 @@ def s3( object, robot ):
 
 def s4( object, robot ):
     object.state_label['text'] = '離開聊天室'
-    robot.leave()
+    try:
+        robot.leave()
+    except:
+        pass
     object.message_queue.clear()
     return True
 
@@ -50,10 +61,10 @@ def s1( object ,robot ):
     robot.change_secret( object.edit_text.get(1.0,'end-1c') )
     result = robot.start()
     if result == None:
-        message = robot.get_message()
+        message = robot.get_message(1)
         while message != None:
             object.message_queue.append(message)
-            message = robot.get_message(5)
+            message = robot.get_message()
         if object.message_queue:
             return True
         else:
@@ -77,11 +88,11 @@ def s1( object ,robot ):
 
 def s5( object, robot ):
     object.state_label['text'] = '檢查陌生人性別'
-    pattern = [re.compile(r'.*女.*'), re.compile(r'.*women.*')]
+    global w_pattern
     catch_flag = False
     while object.message_queue:
         message = object.message_queue.pop(0)
-        for p in pattern:
+        for p in w_pattern:
             match = p.search(message)
             if match:
                 catch_flag = True
@@ -93,8 +104,7 @@ def s5( object, robot ):
 
 def s6( object, robot ):
     object.state_label['text'] = '檢查對方回覆'
-    pattern = [re.compile(r'.*男.*'), re.compile(r'.*找.*妹.*'), re.compile(r'.*找.*女.*'),
-    re.compile(r'.*妳好.*'),re.compile(r'.*女.*?')]
+    global pattern
     leave_flag = False
     message = None
     for message in  object.message_queue:
@@ -109,8 +119,10 @@ def s6( object, robot ):
 
 def s7( object, robot ):
     object.state_label['text'] = '等待30秒'
-    time.sleep(15)
-    message = robot.get_message()
+    stranger_leave = robot.check_stranger()
+    if stranger_leave:
+        return False
+    message = robot.get_message(30)
     while message != None:
         object.message_queue.append(message)
         message = robot.get_message()
@@ -121,7 +133,7 @@ def s7( object, robot ):
 
 def s8( object, robot ):
     object.state_label['text'] = '性別檢查'
-    pattern = [re.compile(r'.*女.*'), re.compile(r'.*women.*')]
+    global w_pattern
     catch_flag = False
     message = None
     while object.message_queue:
@@ -163,6 +175,10 @@ def s10( object, robot ):
     if stranger_leave:
         return True
     else:
+        message = robot.get_message() # progress
+        while message != None:
+            object.message_queue.append(message)
+            message = robot.get_message()
         message = robot.get_message()
         while message != None:
             object.message_queue.append(message)
@@ -173,7 +189,7 @@ def s10( object, robot ):
             return True
 
 transition_table = {s1:[s3,s2],s2:[s5,s4],s3:[s7,s6],s4:[s1,s1],\
-s5:[s3,s9],s6:[s8,s4],s7:[s4,s2], s8:[s10,s9],s9:[s4,s4],s10:[s4,s5]}
+s5:[s3,s9],s6:[s8,s4],s7:[s4,s2], s8:[s10,s9],s9:[s4,s4],s10:[s5,s4]}
 
 class new_thread( threading.Thread ):
     def __init__( self, *args, **kwargs ):
