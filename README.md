@@ -11,5 +11,6 @@
 | filter.py | 負責篩選的自動化程式 |
 | main.py | 程式gui介面 |
 
-*[專案報告](https://github.com/TH04e22/Wootalk_man_filter/blob/master/LCS_Team12_final_report.docx)
-*[專案簡報](https://github.com/TH04e22/Wootalk_man_filter/blob/master/LCS_Team12.pptx)
+
+* [專案報告](https://github.com/TH04e22/Wootalk_man_filter/blob/master/LCS_Team12_final_report.docx)
+* [專案簡報](https://github.com/TH04e22/Wootalk_man_filter/blob/master/LCS_Team12.pptx)
