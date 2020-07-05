@@ -8,8 +8,8 @@ from tkinter import messagebox
 pattern = [re.compile(r'.*男.*'), re.compile(r'.*找.*妹.*'), re.compile(r'.*找.*女.*'),
     re.compile(r'.*妳好.*'),re.compile(r'.*女.*\?|？'),re.compile(r'.*女.*嗎\?|？'),re.compile(r'.*女.*嗎')]
 w_pattern = [re.compile(r'.*女.*'), re.compile(r'.*women.*')]
-answer = ['哈囉','你好','晚上好','一個人的夜晚好痛苦','想找一個人聊天','男? 女?','安','嗨嗨','你好 我是電通彭于晏']
-def s2( object ,robot ):
+answer = ['高雄 21 男']
+def s2( object ,robot ): 
     global pattern
     object.state_label['text'] = '檢查陌生人回復'
     leave_flag = False
